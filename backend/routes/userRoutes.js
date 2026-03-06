@@ -39,10 +39,43 @@ router.put("/profile", protect, async (req, res) => {
 /**
  * GET all users (ADMIN ONLY)
  */
+// router.get("/", protect, adminOnly, async (req, res) => {
+//   try {
+//     const users = await User.find().select("-password");
+//     res.json(users);
+//   } catch (err) {
+//     res.status(500).json({ message: "Failed to fetch users" });
+//   }
+// });
+
+
 router.get("/", protect, adminOnly, async (req, res) => {
   try {
-    const users = await User.find().select("-password");
-    res.json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const search = req.query.search || "";
+
+    const query = {
+      $or: [
+        { firstName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { rollno: { $regex: search, $options: "i" } },
+      ],
+    };
+
+    const totalUsers = await User.countDocuments(query);
+
+    const users = await User.find(query)
+      .select("-password")
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      users,
+      totalPages: Math.ceil(totalUsers / limit),
+      currentPage: page,
+    });
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch users" });
   }
