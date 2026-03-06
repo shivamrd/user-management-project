@@ -39,15 +39,6 @@ router.put("/profile", protect, async (req, res) => {
 /**
  * GET all users (ADMIN ONLY)
  */
-// router.get("/", protect, adminOnly, async (req, res) => {
-//   try {
-//     const users = await User.find().select("-password");
-//     res.json(users);
-//   } catch (err) {
-//     res.status(500).json({ message: "Failed to fetch users" });
-//   }
-// });
-
 
 router.get("/", protect, adminOnly, async (req, res) => {
   try {
